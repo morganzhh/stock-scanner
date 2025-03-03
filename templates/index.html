@@ -28,6 +28,16 @@
                         <!-- <option value="CRYPTO">加密货币</option> -->
                     </select>
                 </div>
+                <div class="mb-4">
+                    <label for="marketType" class="block text-sm font-medium text-gray-700 mb-2">
+                        选择使用模型
+                    </label>
+                    <select id="model"
+                            class="w-full p-2 border rounded bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="deepseek">Deepseek R1</option>
+                        <option value="gemini">Google Gemini</option>
+                    </select>
+                </div>
 
                 <div class="mb-4">
                     <label for="batchStocks" class="block text-sm font-medium text-gray-700 mb-2">
@@ -64,6 +74,7 @@
 
             const stockInput = document.getElementById('batchStocks').value.trim();
             const marketType = document.getElementById('marketType').value;
+            const model = document.getElementById('model').value;
             const analyzeBtn = document.getElementById('analyzeBtn');
             const loadingSpinner = document.getElementById('loadingSpinner');
             
@@ -89,7 +100,8 @@
                     },
                     body: JSON.stringify({ 
                         stock_codes: stockCodes,
-                        market_type: marketType  // 添加市场类型参数
+                        market_type: marketType,  // 添加市场类型参数
+                        model: model  // 添加市场类型参数
                     })
                 });
 

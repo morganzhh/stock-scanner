@@ -216,7 +216,7 @@ class StockAnalyzer:
             self.logger.error(f"计算评分时出错: {str(e)}")
             raise
             
-    def get_ai_analysis(self, df, stock_code):
+    def get_ai_analysis(self, df, stock_code, model):
         """使用 Gemini 进行 AI 分析"""
         try:
             recent_data = df.tail(14).to_dict('records')
@@ -247,24 +247,35 @@ class StockAnalyzer:
             
             请基于技术指标和市场动态进行分析，给出具体数据支持。
             """
-            
+
+            endpoint = ""
+            auth = ""
+            model_name = ""
+            if model == 'deepseek':
+                endpoint = os.getenv('DEEPSEEK_API_ENDPOINT')
+                auth = os.getenv('DEEPSEEK_API_AUTH')
+                model_name = os.getenv('DEEPSEEK_API_MODEL')
+            else :
+                endpoint = os.getenv('GEMINI_API_URL')
+                auth = os.getenv('GEMINI_API_KEY')
+                model_name = os.getenv('GEMINI_API_MODEL')
+
             headers = {
-                "Authorization": f"Bearer {self.gemini_api_key}",
+                "Authorization": f"Bearer {auth}",
                 "Content-Type": "application/json"
             }
-            
+
             data = {
-                "model": os.getenv('GEMINI_API_MODEL'),
+                "model": model_name,
                 "messages": [{"role": "user", "content": prompt}]
             }
             
             response = requests.post(
-                f"{self.gemini_api_url}/v1/chat/completions",
+                f"{endpoint}/chat/completions",
                 headers=headers,
                 json=data,
-                timeout=30
+                timeout=300
             )
-            print(headers)
             print(data)
             print(response.json())
 
@@ -290,7 +301,7 @@ class StockAnalyzer:
         else:
             return '强烈建议卖出'
             
-    def analyze_stock(self, stock_code, market_type='A'):
+    def analyze_stock(self, stock_code, market_type='A', model='gemini'):
         """分析单个股票"""
         try:
             # 获取股票数据
@@ -318,7 +329,7 @@ class StockAnalyzer:
                 'macd_signal': 'BUY' if latest['MACD'] > latest['Signal'] else 'SELL',
                 'volume_status': 'HIGH' if latest['Volume_Ratio'] > 1.5 else 'NORMAL',
                 'recommendation': self.get_recommendation(score),
-                'ai_analysis': self.get_ai_analysis(df, stock_code)
+                'ai_analysis': self.get_ai_analysis(df, stock_code, model)
             }
             
             return report
@@ -333,7 +344,7 @@ class StockAnalyzer:
         
         for stock_code in stock_list:
             try:
-                report = self.analyze_stock(stock_code, market_type)
+                report = self.analyze_stock(stock_code, market_type, 'gemini')
                 if report['score'] >= min_score:
                     recommendations.append(report)
             except Exception as e:

@@ -27,14 +27,15 @@ def analyze():
     try:
         data = request.json
         stock_codes = data.get('stock_codes', [])
-        market_type = data.get('market_type', 'A') 
+        market_type = data.get('market_type', 'A')
+        model = data.get('model', '')
         
         if not stock_codes:
             return jsonify({'error': '请输入代码'}), 400
             
         results = []
         for stock_code in stock_codes:
-            result = analyzer.analyze_stock(stock_code.strip(), market_type)
+            result = analyzer.analyze_stock(stock_code.strip(), market_type, model)
             results.append(result)
             
         return jsonify({'results': results})
